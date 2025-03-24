@@ -1,0 +1,11 @@
+{
+  "name": "messenger-demo",
+  "version": "1.0.0",
+  "description": "A demo application that allows users to exchange real-time messages",
+  "type": "module",
+  "scripts": {
+    "start:server:dev": "cd server && npm run dev"
+  },
+  "author": "Alessandro Capra",
+  "license": "ISC"
+}

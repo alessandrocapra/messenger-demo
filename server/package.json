@@ -1,0 +1,21 @@
+{
+  "name": "messenger-demo-server",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "node index.ts",
+    "dev": "node --watch --env-file=.env src/index.ts"
+  },
+  "author": "Alessandro Capra",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.13",
+    "typescript": "^5.8.2"
+  }
+}
