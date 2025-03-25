@@ -1,10 +1,12 @@
-import express from "express";
-const port = process.env.PORT;
+import dotenv from 'dotenv'
+dotenv.config()
 
+import express from "express";
+import userRoutes from "./routes/userRoutes.js";
+
+const port = process.env.PORT;
 const app = express();
 
-app.get("/", (_req, res) => {
-  res.send({ message: "test" });
-})
+app.use('/auth', userRoutes);
 
 app.listen(port, () => console.log(`Server is running on port ${port}`));
