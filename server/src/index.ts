@@ -7,6 +7,8 @@ import helmet from 'helmet';
 
 import userRoutes from "./routes/userRoutes.js";
 import { errorHandler } from './middlewares/error.js';
+import conversationRoutes from './routes/conversationRoutes.js';
+import { verifyToken } from './middlewares/authMiddleware.js';
 
 const port = process.env.PORT || 8080;
 const app = express();
@@ -14,12 +16,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-
 app.use(errorHandler);
 
 app.use('/auth', userRoutes);
+app.use('/conversations', verifyToken, conversationRoutes);
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ message: "Internal Server Error" });
 });
