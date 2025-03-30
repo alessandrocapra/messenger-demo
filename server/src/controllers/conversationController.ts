@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { createConversationSchema } from '../schemas/conversationSchema.js';
 import prisma from '../db/prisma.js';
+import { Server } from 'socket.io';
 
 export const createConversation = async (req: Request, res: Response) => {
   try {
@@ -131,6 +132,7 @@ export const sendMessage = async (req: Request, res: Response) => {
     const { conversationId } = req.params
     const { content } = req.body
     const userId = req.user?.id
+    const io = req.app.get('io') as Server;
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
@@ -177,6 +179,12 @@ export const sendMessage = async (req: Request, res: Response) => {
 
       return responseMessage;
     });
+
+    try {
+      io.to(`conversation:${conversationId}`).emit('new-message', result);
+    } catch (socketError) {
+      console.error('Socket.IO emit error:', socketError);
+    }
 
     res.status(201).json({ message: "Message sent successfully", data: result });
   } catch (error) {

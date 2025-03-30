@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../db/prisma.js";
-//
+
 // Extended Express Request type for type safety
 declare global {
   namespace Express {

@@ -8,12 +8,21 @@ function App() {
   const [count, setCount] = useState(0)
 
   useEffect(() => {
-    // Create socket connection
-    const socket = io('http://localhost:8080');
+    // Create socket connection (test for now)
+    const socket = io('http://localhost:8080', {
+      auth: {
+        token: 'Bearer TOKEN_HERE'
+      }
+    });
 
     socket.on('connect', () => {
       console.log('Connected to server!');
       console.log('Socket ID:', socket.id);
+    });
+
+
+    socket.on('new-message', (message) => {
+      console.log('New message:', message);
     });
 
     socket.on('disconnect', () => {
