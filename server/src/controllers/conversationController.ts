@@ -61,7 +61,7 @@ export const createConversation = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "Conversation created successfully",
-      conversation
+      data: conversation
     });
   } catch (error) {
     console.error("Error creating conversation:", error);
@@ -119,7 +119,7 @@ export const getUserConversations = async (req: Request, res: Response) => {
       }
     })
 
-    res.status(200).json({ message: "Conversations retrieved successfully", conversations: mappedConversations, pagination: { take, skip, total } });
+    res.status(200).json({ message: "Conversations retrieved successfully", data: mappedConversations, pagination: { take, skip, total } });
   } catch (error) {
     console.error("Error retrieving conversations:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -163,17 +163,22 @@ export const sendMessage = async (req: Request, res: Response) => {
         include: {
           sender: {
             select: {
-              id: true,
               email: true
             }
           }
         }
       });
 
-      return newMessage;
+      const { sender, ...rest } = newMessage;
+      const responseMessage = {
+        ...rest,
+        senderEmail: newMessage.sender.email
+      };
+
+      return responseMessage;
     });
 
-    res.status(201).json({ message: "Message sent successfully", newMessage: result });
+    res.status(201).json({ message: "Message sent successfully", data: result });
   } catch (error) {
     console.error("Error sending message:", error);
     if (error instanceof Error && error.message === "Conversation not found or user is not a participant") {
@@ -181,6 +186,56 @@ export const sendMessage = async (req: Request, res: Response) => {
       return;
 
     }
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export const getMessages = async (req: Request, res: Response) => {
+  try {
+    const { conversationId } = req.params
+    const userId = req.user?.id
+    const take = Math.min(Number(req.query.take) || 10, 50);
+    const skip = Math.max(Number(req.query.skip) || 0, 0);
+
+
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const participant = await prisma.participant.findFirst({
+      where: {
+        userId: Number(userId),
+        conversationId: Number(conversationId)
+      }
+    });
+
+    if (!participant) {
+      res.status(404).json({ message: "Conversation not found or user not part of the conversation" });
+      return;
+    }
+
+    const [messages, totalCount] = await prisma.$transaction([
+      prisma.message.findMany({
+        where: { conversationId: Number(conversationId) },
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+        include: { sender: { select: { email: true } } }
+      }),
+      prisma.message.count({ where: { conversationId: Number(conversationId) } })
+    ]);
+
+    res.status(200).json({
+      message: "Messages retrieved successfully", data: messages,
+      pagination: {
+        take,
+        skip,
+        total: totalCount
+      }
+    });
+  } catch (error) {
+    console.error("Error retrieving messages:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
