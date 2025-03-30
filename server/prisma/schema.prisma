@@ -27,6 +27,7 @@ model User {
 model Conversation {
   id           Int           @id @default(autoincrement())
   createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   isGroup      Boolean       @default(false)
   groupName    String?
   participants Participant[]
